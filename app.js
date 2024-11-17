@@ -28,4 +28,33 @@ if (host) {
 
 nodeCleanup(cleanup)
 
+// Add these handlers for proper cleanup
+process.on('SIGINT', async () => {
+    console.log('Running cleanup before exit.');
+    // Cleanup all active sessions
+    for (const [sessionId] of sessions) {
+        await cleanupSession(sessionId);
+    }
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    console.log('Running cleanup before exit.');
+    // Cleanup all active sessions
+    for (const [sessionId] of sessions) {
+        await cleanupSession(sessionId);
+    }
+    process.exit(0);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', async (error) => {
+    console.error('Uncaught Exception:', error);
+    // Cleanup all active sessions
+    for (const [sessionId] of sessions) {
+        await cleanupSession(sessionId);
+    }
+    process.exit(1);
+});
+
 export default app
