@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import nodeCleanup from 'node-cleanup'
 import routes from './routes.js'
-import { init, cleanup } from './whatsapp.js'
+import { init, cleanup, getSession, deleteSession } from './whatsapp.js'
 import cors from 'cors'
 
 const app = express()
@@ -28,33 +28,25 @@ if (host) {
 
 nodeCleanup(cleanup)
 
+
 // Add these handlers for proper cleanup
 process.on('SIGINT', async () => {
-    console.log('Running cleanup before exit.');
-    // Cleanup all active sessions
-    for (const [sessionId] of sessions) {
-        await cleanupSession(sessionId);
-    }
-    process.exit(0);
-});
+    console.log('Running cleanup before exit.')
+    cleanup()
+    process.exit(0)
+})
 
 process.on('SIGTERM', async () => {
-    console.log('Running cleanup before exit.');
-    // Cleanup all active sessions
-    for (const [sessionId] of sessions) {
-        await cleanupSession(sessionId);
-    }
-    process.exit(0);
-});
+    console.log('Running cleanup before exit.')
+    cleanup()
+    process.exit(0)
+})
 
-// Handle uncaught exceptions
 process.on('uncaughtException', async (error) => {
-    console.error('Uncaught Exception:', error);
-    // Cleanup all active sessions
-    for (const [sessionId] of sessions) {
-        await cleanupSession(sessionId);
-    }
-    process.exit(1);
-});
+    console.error('Uncaught Exception:', error)
+    cleanup()
+    process.exit(1)
+})
+
 
 export default app
